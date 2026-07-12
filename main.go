@@ -22,6 +22,8 @@ func main() {
 		fmt.Println("[WARNING]: missing AI API key", e)
 	}
 
+	fmt.Println("starting server....")
+
 	app.StartApp()
 
 	// for _, val := range v {

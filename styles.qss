@@ -1,0 +1,19 @@
+
+DouglasMainWidget {
+    background-color: #202020;
+}
+
+
+#sidebar {
+    background-color: red;
+    border: 5px solid black;
+}
+
+#mainContent {
+    background-color: green;
+}
+
+QLabel {
+    margin: 0px;
+    padding: 0px;
+}

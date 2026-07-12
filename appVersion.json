@@ -1,6 +1,6 @@
 {
-    "versionInt": 7,
-    "versionStr": "stable_1.1.0",
+    "versionInt": 10,
+    "versionStr": "dev-2.0.0",
     "shouldUpdate": false,
     "updatePathWin64": "https://github.com/thisisaname1928/Douglas/raw/refs/heads/master/updates/douglas_1.1.0.stable.zip?archive=false"
 }

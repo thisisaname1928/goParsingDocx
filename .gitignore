@@ -30,3 +30,4 @@ build
 testsvr/testdata/*
 !holder.txt
 app/media/*
+dglWrapper/CMakeUserPresets.json
