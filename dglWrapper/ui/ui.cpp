@@ -1,6 +1,7 @@
 #include "ui.hpp"
 #include "../core/load.hpp"
 #include "../utils/utils.hpp"
+#include <QGraphicsDropShadowEffect>
 #include <QtConcurrent>
 #include <cstddef>
 #include <filesystem>
@@ -10,6 +11,7 @@
 #include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qeventloop.h>
+#include <qfontdatabase.h>
 #include <qframe.h>
 #include <qicon.h>
 #include <qlabel.h>
@@ -21,6 +23,8 @@
 #include <qthread.h>
 #include <qtimer.h>
 #include <qwidget.h>
+
+QIcon *appIcon;
 
 DouglasLoadingUI::DouglasLoadingUI() : QMainWindow() {
   setWindowTitle("Douglas");
@@ -51,8 +55,20 @@ int DouglasApp::exec() {
   connect(loader, &Loader::done, this, &DouglasApp::doneLoading);
   connect(loader, &Loader::fail, this, &DouglasApp::loadingFail);
 
-  // loadup styles
+  // load lucide icon
+  int fontId = QFontDatabase::addApplicationFont(
+      QString::fromStdString((exePath / "lucide.ttf").string()));
 
+  if (fontId == -1) {
+    loadingFail("missing lucide icon!");
+    return QApplication::exec();
+  }
+
+  std::cout
+      << QFontDatabase::applicationFontFamilies(fontId).at(0).toStdString()
+      << '\n';
+
+  // loadup styles
   std::string qssSrc;
   std::cout << (exePath / "styles.qss").string() << '\n';
   try {
@@ -114,10 +130,17 @@ SideBar::SideBar(QWidget *parent) : QFrame(parent) {
   setObjectName("sidebar");
   QLabel *label = new QLabel("Side bar here");
 
+  SimpleIconBtn *homeTab = new SimpleIconBtn(nullptr, "Trang chủ", "house");
+  homeTab->setChecked(true);
+
   QVBoxLayout *layout = new QVBoxLayout(this);
-  layout->setContentsMargins(0, 0, 0, 0);
-  layout->setSpacing(0);
-  layout->addWidget(label);
+  layout->setAlignment(Qt::AlignTop);
+  layout->setContentsMargins(0, 12, 0, 0);
+  layout->setSpacing(4);
+  layout->addWidget(new sidebarHdr(), 1);
+  layout->addWidget(homeTab, 1);
+  layout->addWidget(new SimpleIconBtn(nullptr, "Soạn", "file-pen-line"), 1);
+  layout->addWidget(new SimpleIconBtn(nullptr, "Tạo bài kiểm tra", "radio"), 1);
 }
 
 class MainContent : public QWidget {
@@ -128,12 +151,20 @@ public:
 MainContent::MainContent() : QWidget() {
   setObjectName("mainContent");
   setAttribute(Qt::WA_StyledBackground, true);
+  setContentsMargins(0, 20, 20, 20);
   QLabel *label = new QLabel("Main content here");
 
   QVBoxLayout *layout = new QVBoxLayout(this);
-  layout->setContentsMargins(0, 0, 0, 0);
   layout->addWidget(label);
   layout->setSpacing(0);
+
+  QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
+  shadow->setBlurRadius(24);
+  shadow->setXOffset(0);
+  shadow->setYOffset(6);
+  shadow->setColor(QColor(0, 0, 0, 40));
+
+  setGraphicsEffect(shadow);
 }
 
 class DouglasMainWidget : public QWidget {
@@ -152,13 +183,13 @@ DouglasMainWidget::DouglasMainWidget(QWidget *parent) : QWidget(parent) {
   layout->addWidget(new SideBar(this), 1);
   layout->addWidget(new MainContent, 5);
 
-  layout->setContentsMargins(0, 0, 0, 0);
+  layout->setContentsMargins(0, 10, 10, 10);
   layout->setSpacing(0);
 }
 
 DouglasMainWindow::DouglasMainWindow() : QMainWindow() {
   setWindowTitle("Douglas");
-  resize(600, 400);
+  resize(1200, 800);
 
   mainWidget = new DouglasMainWidget(this);
 

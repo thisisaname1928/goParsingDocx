@@ -3,9 +3,21 @@
 #include <QApplication>
 #include <QLabel>
 #include <QMainWindow>
+#include <QPushButton>
 #include <qcoreapplication.h>
 #include <qmainwindow.h>
 #include <qwidget.h>
+
+class sidebarHdr : public QWidget {
+public:
+  sidebarHdr(QWidget *parent = nullptr);
+};
+
+class SimpleIconBtn : public QPushButton {
+public:
+  SimpleIconBtn(QWidget *parent = nullptr, QString label = "",
+                QString icon = "");
+};
 
 class DouglasLoadingUI : public QMainWindow {
 public:
@@ -39,7 +51,8 @@ public slots:
   void loadingFail(QString reason);
 
 private:
-  QIcon *appIcon;
   DouglasLoadingUI *loadingWindow;
   DouglasMainWindow *mainWindow;
 };
+
+extern QIcon *appIcon;

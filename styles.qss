@@ -1,19 +1,82 @@
 
+QWidget {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+}
+
 DouglasMainWidget {
-    background-color: #202020;
 }
 
 
 #sidebar {
-    background-color: red;
-    border: 5px solid black;
+    border-right: 1px solid #e0e0e0;
+}
+
+QMainWindow {    
+   background: qradialgradient(
+        cx: 0.15, cy: 0.05,
+        radius: 0.9,
+        fx: 0.15, fy: 0.05,
+        stop: 0    #b9ebe8,
+        stop: 0.5  #eef4f3,
+        stop: 1    #ffffff
+    );
 }
 
 #mainContent {
-    background-color: green;
+    background-color: #ffffff;
+    border-radius: 10px;
 }
 
 QLabel {
     margin: 0px;
     padding: 0px;
+}
+
+QLabel[class="SimpleBtnIcon"] {
+    font-family: lucide;
+    font-size: 18px;
+    margin-left: 8px;
+    margin-right: 2px;
+}
+
+QWidget[class="SimpleIconBtn"] {
+    background-color: transparent;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 13px;
+    color: #4a4a4a;
+    margin-left: 6px;
+    margin-right: 6px;
+}
+
+QWidget[class="SimpleIconBtn"]:hover {
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+QWidget[class="SimpleIconBtn"]:checked {
+    background-color: #ffffff;
+    color: #1c1c1e;
+    font-weight: 600;
+}
+
+QWidget[class="SimpleIconBtn"]:pressed {
+    background-color: #f2f2f2;
+}
+
+QLabel[class="HdrIcon"] {
+    font-size: 64px;
+    margin-right: 2px;
+}
+
+QLabel[class="HdrTxt"] {
+    font-weight: 600;
+    font-size: 20px;
+    margin-left: 8px;
+}
+
+QWidget[class="SidebarHdr"] {
+    margin-bottom: 100px;
 }

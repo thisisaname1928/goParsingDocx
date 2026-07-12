@@ -5,7 +5,6 @@
 #include <QVBoxLayout>
 #include <QWebEngineView>
 #include <QtWebView/QtWebView>
-#include <cstdint>
 #include <cstring>
 #include <filesystem>
 #include <iostream>
@@ -15,9 +14,12 @@
 #include <qmainwindow.h>
 #include <qnamespace.h>
 #include <qwidget.h>
-#include <string>
 
 int main(int argc, char *argv[]) {
+  QApplication::setHighDpiScaleFactorRoundingPolicy(
+      Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+  QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
   QString path = QString::fromStdString(getBinaryPath().string());
 
   for (int i = path.size() - 1; i >= 0; i--) {
