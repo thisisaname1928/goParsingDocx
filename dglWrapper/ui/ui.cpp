@@ -1,6 +1,7 @@
 #include "ui.hpp"
 #include "../core/load.hpp"
 #include "../utils/utils.hpp"
+#include "home.hpp"
 #include <QGraphicsDropShadowEffect>
 #include <QtConcurrent>
 #include <cstddef>
@@ -19,6 +20,7 @@
 #include <qmainwindow.h>
 #include <qnamespace.h>
 #include <qobjectdefs.h>
+#include <qpushbutton.h>
 #include <qtconcurrentrun.h>
 #include <qthread.h>
 #include <qtimer.h>
@@ -121,17 +123,25 @@ DouglasApp::~DouglasApp() {
   }
 }
 
-class SideBar : public QFrame {
-public:
-  SideBar(QWidget *parent = nullptr);
-};
-
-SideBar::SideBar(QWidget *parent) : QFrame(parent) {
+SideBar::SideBar(QWidget *parent, MainContent *mainContent)
+    : QFrame(parent), mainContent(mainContent) {
   setObjectName("sidebar");
   QLabel *label = new QLabel("Side bar here");
 
-  SimpleIconBtn *homeTab = new SimpleIconBtn(nullptr, "Trang chủ", "house");
-  homeTab->setChecked(true);
+  homeTab = new SimpleIconBtn(nullptr, "Trang chủ", "house");
+  editTab = new SimpleIconBtn(nullptr, "Soạn", "file-pen-line");
+  createTab = new SimpleIconBtn(nullptr, "Tạo bài kiểm tra", "radio");
+
+  homeTab->setCheckable(true);
+  editTab->setCheckable(true);
+  createTab->setCheckable(true);
+
+  connect(homeTab, &QPushButton::clicked, this, &SideBar::handleHomeTabClick);
+  connect(editTab, &QPushButton::clicked, this, &SideBar::handleEditTabClick);
+  connect(createTab, &QPushButton::clicked, this,
+          &SideBar::handleCreateTabClick);
+
+  handleHomeTabClick();
 
   QVBoxLayout *layout = new QVBoxLayout(this);
   layout->setAlignment(Qt::AlignTop);
@@ -139,24 +149,65 @@ SideBar::SideBar(QWidget *parent) : QFrame(parent) {
   layout->setSpacing(4);
   layout->addWidget(new sidebarHdr(), 1);
   layout->addWidget(homeTab, 1);
-  layout->addWidget(new SimpleIconBtn(nullptr, "Soạn", "file-pen-line"), 1);
-  layout->addWidget(new SimpleIconBtn(nullptr, "Tạo bài kiểm tra", "radio"), 1);
+  layout->addWidget(editTab, 1);
+  layout->addWidget(createTab, 1);
 }
 
-class MainContent : public QWidget {
-public:
-  MainContent();
-};
+enum SidebarTab { SB_CREATE_TAB = 1, SB_HOME_TAB = 2, SB_EDIT_TAB };
 
-MainContent::MainContent() : QWidget() {
+void SideBar::handleCreateTabClick() {
+  curTab = SB_CREATE_TAB;
+
+  homeTab->setChecked(false);
+  editTab->setChecked(false);
+  createTab->setChecked(true);
+
+  mainContent->setMainContentLabel("Tạo bài kiểm tra");
+}
+void SideBar::handleEditTabClick() {
+  curTab = SB_EDIT_TAB;
+
+  homeTab->setChecked(false);
+  editTab->setChecked(true);
+  createTab->setChecked(false);
+
+  mainContent->setMainContentLabel("Soạn");
+}
+void SideBar::handleHomeTabClick() {
+  curTab = SB_EDIT_TAB;
+
+  homeTab->setChecked(true);
+  editTab->setChecked(false);
+  createTab->setChecked(false);
+
+  mainContent->setMainContentLabel("Trang chủ");
+}
+
+void MainContent::setMainContentLabel(QString title) { label->setText(title); }
+
+void MainContent::setMainContent(DouglasHomePage *page) {
+  if (curPage == nullptr) {
+    layout->addWidget(page);
+    curPage = page;
+  } else {
+    layout->replaceWidget(curPage, page);
+    curPage = page;
+  }
+}
+
+MainContent::MainContent(QWidget *parent) : QWidget(parent) {
+  curPage = nullptr;
   setObjectName("mainContent");
   setAttribute(Qt::WA_StyledBackground, true);
-  setContentsMargins(0, 20, 20, 20);
-  QLabel *label = new QLabel("Main content here");
+  setContentsMargins(0, 0, 20, 20);
+  label = new QLabel("Main content here");
+  label->setProperty("class", "MainContentTitle");
+  label->setAlignment(Qt::AlignTop);
 
-  QVBoxLayout *layout = new QVBoxLayout(this);
+  layout = new QVBoxLayout(this);
   layout->addWidget(label);
   layout->setSpacing(0);
+  layout->setAlignment(Qt::AlignTop);
 
   QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
   shadow->setBlurRadius(24);
@@ -179,9 +230,13 @@ DouglasMainWidget::DouglasMainWidget(QWidget *parent) : QWidget(parent) {
   setAttribute(Qt::WA_StyledBackground, true);
   setObjectName("mainWidget");
 
+  MainContent *mainContent = new MainContent(this);
+  DouglasHomePage *page = new DouglasHomePage(mainContent);
+  mainContent->setMainContent(page);
+
   layout = new QHBoxLayout(this);
-  layout->addWidget(new SideBar(this), 1);
-  layout->addWidget(new MainContent, 5);
+  layout->addWidget(new SideBar(this, mainContent), 1);
+  layout->addWidget(mainContent, 5);
 
   layout->setContentsMargins(0, 10, 10, 10);
   layout->setSpacing(0);

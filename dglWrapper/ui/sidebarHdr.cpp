@@ -20,7 +20,7 @@ sidebarHdr::sidebarHdr(QWidget *parent) : QWidget(parent) {
 
   layout->addWidget(label);
   layout->setSpacing(8);
-  layout->setContentsMargins(20, 0, 0, 40);
+  layout->setContentsMargins(20, 6, 0, 55);
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
   setProperty("class", "SidebarHdr");

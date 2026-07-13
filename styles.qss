@@ -15,17 +15,18 @@ DouglasMainWidget {
 QMainWindow {    
    background: qradialgradient(
         cx: 0.15, cy: 0.05,
-        radius: 0.9,
-        fx: 0.15, fy: 0.05,
+        radius: 1,
+        fx: 0.15, fy: 0.07,
         stop: 0    #b9ebe8,
         stop: 0.5  #eef4f3,
-        stop: 1    #ffffff
+        stop: 1    #e1f5f4
     );
 }
 
 #mainContent {
     background-color: #ffffff;
     border-radius: 10px;
+    margin-left: 14px;
 }
 
 QLabel {
@@ -38,6 +39,7 @@ QLabel[class="SimpleBtnIcon"] {
     font-size: 18px;
     margin-left: 8px;
     margin-right: 2px;
+    color: #0F6E56;
 }
 
 QWidget[class="SimpleIconBtn"] {
@@ -46,10 +48,11 @@ QWidget[class="SimpleIconBtn"] {
     border-radius: 10px;
     padding: 9px 12px;
     text-align: left;
-    font-size: 13px;
-    color: #4a4a4a;
+    font-size: 14px;
     margin-left: 6px;
     margin-right: 6px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 QWidget[class="SimpleIconBtn"]:hover {
@@ -58,12 +61,16 @@ QWidget[class="SimpleIconBtn"]:hover {
 
 QWidget[class="SimpleIconBtn"]:checked {
     background-color: #ffffff;
-    color: #1c1c1e;
     font-weight: 600;
 }
 
 QWidget[class="SimpleIconBtn"]:pressed {
     background-color: #f2f2f2;
+}
+
+QLabel[class="SimpleIconBtnLabel"] {
+    color: #000;
+    font-size: 14px;
 }
 
 QLabel[class="HdrIcon"] {
@@ -79,4 +86,11 @@ QLabel[class="HdrTxt"] {
 
 QWidget[class="SidebarHdr"] {
     margin-bottom: 100px;
+}
+
+QLabel[class="MainContentTitle"] {
+    font-size: 24px;
+    font-weight: 500;
+    margin-left: 25px;
+    margin-top: 0;
 }
