@@ -19,3 +19,9 @@ SimpleIconBtn::SimpleIconBtn(QWidget *parent, QString label, QString iconName)
   setProperty("class", "SimpleIconBtn");
   setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 }
+
+IconOnlyBtn::IconOnlyBtn(QWidget *parent, QString iconName)
+    : QPushButton(parent) {
+  setText(iconName);
+  setProperty("class", "IconOnlyBtn");
+}

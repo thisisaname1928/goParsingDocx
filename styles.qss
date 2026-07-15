@@ -53,10 +53,12 @@ QWidget[class="SimpleIconBtn"] {
     margin-right: 6px;
     margin-top: 2px;
     margin-bottom: 2px;
+    min-width: 115px;
 }
 
 QWidget[class="SimpleIconBtn"]:hover {
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: #f1f5f9;
+    color: #0f172a;
 }
 
 QWidget[class="SimpleIconBtn"]:checked {
@@ -91,6 +93,54 @@ QWidget[class="SidebarHdr"] {
 QLabel[class="MainContentTitle"] {
     font-size: 24px;
     font-weight: 500;
-    margin-left: 25px;
-    margin-top: 0;
+    margin-bottom: 1px;
+}
+
+QPushButton[class="IconOnlyBtn"] {
+    font-family: lucide;
+    font-size: 15px;
+    background-color: transparent;
+    border: none;
+    margin: 2px;
+    padding: 8px;
+    border-radius: 8px;
+    color: #475569;
+}
+
+QPushButton[class="IconOnlyBtn"]:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+QPushButton[class="IconOnlyBtn"]:pressed {
+    background-color: #e2e8f0;
+}
+/* EditPage stuffs */
+
+#EditPageToolbar {
+    background-color: #ffffff;
+    min-width: 100%;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+#TextEditArea {
+    background-color: #ffffff;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    min-height: 100%;
+    border: 1px solid #e2e8f0;
+    font-size: 15px;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+}
+
+#PreviewArea {
+    background-color: #ffffff;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    min-height: 100%;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
 }

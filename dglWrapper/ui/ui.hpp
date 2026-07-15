@@ -1,5 +1,6 @@
 #pragma once
 
+#include "editor.hpp"
 #include "home.hpp"
 #include <QApplication>
 #include <QLabel>
@@ -9,14 +10,23 @@
 #include <qcoreapplication.h>
 #include <qmainwindow.h>
 #include <qobjectdefs.h>
+#include <qpushbutton.h>
 #include <qwidget.h>
 
 class sidebarHdr : public QWidget {
+  Q_OBJECT
 public:
   sidebarHdr(QWidget *parent = nullptr);
 };
 
+class IconOnlyBtn : public QPushButton {
+  Q_OBJECT
+public:
+  IconOnlyBtn(QWidget *parent, QString icon = "");
+};
+
 class SimpleIconBtn : public QPushButton {
+  Q_OBJECT
 public:
   SimpleIconBtn(QWidget *parent = nullptr, QString label = "",
                 QString icon = "");
@@ -26,18 +36,31 @@ class MainContent : public QWidget {
 public:
   MainContent(QWidget *parent = nullptr);
   void setMainContentLabel(QString title);
-  void setMainContent(DouglasHomePage *page);
+  void setMainContent(QWidget *page);
 
 private:
   QVBoxLayout *layout;
   QLabel *label;
-  DouglasHomePage *curPage;
+  QWidget *curPage;
+};
+
+class DouglasMainWidget : public QWidget {
+public:
+  DouglasMainWidget(QWidget *parent = nullptr);
+  void switchPage(int page);
+
+private:
+  MainContent *mainContent;
+  QHBoxLayout *layout;
+  DouglasHomePage *homePage;
+  DouglasEditPage *editPage;
 };
 
 class SideBar : public QFrame {
   Q_OBJECT
 public:
-  SideBar(QWidget *parent = nullptr, MainContent *mainContent = nullptr);
+  SideBar(DouglasMainWidget *parent = nullptr,
+          MainContent *mainContent = nullptr);
 
 public slots:
   void handleHomeTabClick();

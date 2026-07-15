@@ -1,6 +1,7 @@
 #include "ui.hpp"
 #include "../core/load.hpp"
 #include "../utils/utils.hpp"
+#include "editor.hpp"
 #include "home.hpp"
 #include <QGraphicsDropShadowEffect>
 #include <QtConcurrent>
@@ -123,7 +124,7 @@ DouglasApp::~DouglasApp() {
   }
 }
 
-SideBar::SideBar(QWidget *parent, MainContent *mainContent)
+SideBar::SideBar(DouglasMainWidget *parent, MainContent *mainContent)
     : QFrame(parent), mainContent(mainContent) {
   setObjectName("sidebar");
   QLabel *label = new QLabel("Side bar here");
@@ -141,7 +142,7 @@ SideBar::SideBar(QWidget *parent, MainContent *mainContent)
   connect(createTab, &QPushButton::clicked, this,
           &SideBar::handleCreateTabClick);
 
-  handleHomeTabClick();
+  handleEditTabClick();
 
   QVBoxLayout *layout = new QVBoxLayout(this);
   layout->setAlignment(Qt::AlignTop);
@@ -163,6 +164,8 @@ void SideBar::handleCreateTabClick() {
   createTab->setChecked(true);
 
   mainContent->setMainContentLabel("Tạo bài kiểm tra");
+
+  static_cast<DouglasMainWidget *>(parent())->switchPage(SB_CREATE_TAB);
 }
 void SideBar::handleEditTabClick() {
   curTab = SB_EDIT_TAB;
@@ -172,25 +175,30 @@ void SideBar::handleEditTabClick() {
   createTab->setChecked(false);
 
   mainContent->setMainContentLabel("Soạn");
+  static_cast<DouglasMainWidget *>(parent())->switchPage(SB_EDIT_TAB);
 }
 void SideBar::handleHomeTabClick() {
-  curTab = SB_EDIT_TAB;
+  curTab = SB_HOME_TAB;
 
   homeTab->setChecked(true);
   editTab->setChecked(false);
   createTab->setChecked(false);
 
   mainContent->setMainContentLabel("Trang chủ");
+
+  static_cast<DouglasMainWidget *>(parent())->switchPage(SB_HOME_TAB);
 }
 
 void MainContent::setMainContentLabel(QString title) { label->setText(title); }
 
-void MainContent::setMainContent(DouglasHomePage *page) {
+void MainContent::setMainContent(QWidget *page) {
   if (curPage == nullptr) {
     layout->addWidget(page);
     curPage = page;
   } else {
     layout->replaceWidget(curPage, page);
+    curPage->hide();
+    page->show();
     curPage = page;
   }
 }
@@ -199,7 +207,7 @@ MainContent::MainContent(QWidget *parent) : QWidget(parent) {
   curPage = nullptr;
   setObjectName("mainContent");
   setAttribute(Qt::WA_StyledBackground, true);
-  setContentsMargins(0, 0, 20, 20);
+  setContentsMargins(25, 0, 20, 20);
   label = new QLabel("Main content here");
   label->setProperty("class", "MainContentTitle");
   label->setAlignment(Qt::AlignTop);
@@ -208,31 +216,16 @@ MainContent::MainContent(QWidget *parent) : QWidget(parent) {
   layout->addWidget(label);
   layout->setSpacing(0);
   layout->setAlignment(Qt::AlignTop);
-
-  QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(this);
-  shadow->setBlurRadius(24);
-  shadow->setXOffset(0);
-  shadow->setYOffset(6);
-  shadow->setColor(QColor(0, 0, 0, 40));
-
-  setGraphicsEffect(shadow);
 }
-
-class DouglasMainWidget : public QWidget {
-public:
-  DouglasMainWidget(QWidget *parent = nullptr);
-
-private:
-  QHBoxLayout *layout;
-};
 
 DouglasMainWidget::DouglasMainWidget(QWidget *parent) : QWidget(parent) {
   setAttribute(Qt::WA_StyledBackground, true);
   setObjectName("mainWidget");
 
-  MainContent *mainContent = new MainContent(this);
-  DouglasHomePage *page = new DouglasHomePage(mainContent);
-  mainContent->setMainContent(page);
+  mainContent = new MainContent(this);
+  homePage = new DouglasHomePage(this);
+  editPage = new DouglasEditPage(this);
+  mainContent->setMainContent(homePage);
 
   layout = new QHBoxLayout(this);
   layout->addWidget(new SideBar(this, mainContent), 1);
@@ -240,6 +233,15 @@ DouglasMainWidget::DouglasMainWidget(QWidget *parent) : QWidget(parent) {
 
   layout->setContentsMargins(0, 10, 10, 10);
   layout->setSpacing(0);
+}
+
+void DouglasMainWidget::switchPage(int page) {
+  if (page == SB_HOME_TAB) {
+    mainContent->setMainContent(homePage);
+  } else if (page == SB_EDIT_TAB) {
+    mainContent->setMainContent(editPage);
+  } else {
+  }
 }
 
 DouglasMainWindow::DouglasMainWindow() : QMainWindow() {
