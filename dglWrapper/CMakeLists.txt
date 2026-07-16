@@ -10,7 +10,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets WebEngineWidgets WebView Concurrent)
+find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Concurrent)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
     message(FATAL_ERROR "pls do not building this in-source")
@@ -51,7 +51,5 @@ target_link_libraries(${PROJECT_NAME}
     Qt5::Core
     Qt5::Gui
     Qt5::Widgets
-    Qt5::WebEngineWidgets
-    Qt5::WebView
     Qt5::Concurrent
 )

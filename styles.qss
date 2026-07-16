@@ -103,7 +103,7 @@ QPushButton[class="IconOnlyBtn"] {
     border: none;
     margin: 2px;
     padding: 8px;
-    border-radius: 8px;
+    border-radius: 10px;
     color: #475569;
 }
 
@@ -115,20 +115,24 @@ QPushButton[class="IconOnlyBtn"]:hover {
 QPushButton[class="IconOnlyBtn"]:pressed {
     background-color: #e2e8f0;
 }
+
+QPushButton[class="IconOnlyBtn"]:checked {
+    background-color: #e2e8f0;
+}
 /* EditPage stuffs */
 
 #EditPageToolbar {
     background-color: #ffffff;
     min-width: 100%;
-    border-radius: 8px;
+    border-radius: 10px;
     margin-bottom: 4px;
     border: 1px solid #e2e8f0;
 }
 
 #TextEditArea {
     background-color: #ffffff;
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
     min-height: 100%;
     border: 1px solid #e2e8f0;
     font-size: 15px;
@@ -138,8 +142,8 @@ QPushButton[class="IconOnlyBtn"]:pressed {
 
 #PreviewArea {
     background-color: #ffffff;
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
     min-height: 100%;
     border: 1px solid #e2e8f0;
     background-color: #f8fafc;

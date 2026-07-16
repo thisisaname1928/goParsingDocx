@@ -3,7 +3,6 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QVBoxLayout>
-#include <QWebEngineView>
 #include <QtWebView/QtWebView>
 #include <cstring>
 #include <filesystem>

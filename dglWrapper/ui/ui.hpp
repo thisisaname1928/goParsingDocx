@@ -1,11 +1,13 @@
 #pragma once
 
+#include "btn.hpp"
 #include "editor.hpp"
 #include "home.hpp"
 #include <QApplication>
 #include <QLabel>
 #include <QMainWindow>
 #include <QPushButton>
+#include <QToolButton>
 #include <qboxlayout.h>
 #include <qcoreapplication.h>
 #include <qmainwindow.h>
@@ -17,19 +19,6 @@ class sidebarHdr : public QWidget {
   Q_OBJECT
 public:
   sidebarHdr(QWidget *parent = nullptr);
-};
-
-class IconOnlyBtn : public QPushButton {
-  Q_OBJECT
-public:
-  IconOnlyBtn(QWidget *parent, QString icon = "");
-};
-
-class SimpleIconBtn : public QPushButton {
-  Q_OBJECT
-public:
-  SimpleIconBtn(QWidget *parent = nullptr, QString label = "",
-                QString icon = "");
 };
 
 class MainContent : public QWidget {

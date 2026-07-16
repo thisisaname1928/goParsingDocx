@@ -3,6 +3,7 @@
 #include <qfontdatabase.h>
 #include <qlabel.h>
 #include <qpushbutton.h>
+#include <qtoolbutton.h>
 #include <qwidget.h>
 
 SimpleIconBtn::SimpleIconBtn(QWidget *parent, QString label, QString iconName)
