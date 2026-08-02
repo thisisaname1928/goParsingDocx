@@ -241,12 +241,22 @@
             background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            padding: 15px 20px;
-            max-width: 450px;
+            padding: 20px 25px;
+            max-width: 900px;
             width: 100%;
+            box-sizing: border-box;
             border: 1px solid #e0e0e0;
-            margin-top: 20px;
+            margin: 20px auto 0 auto;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
 
+        .question-card img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px 0;
+            border-radius: 4px;
         }
 
         .popup-card {

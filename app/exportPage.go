@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -21,7 +23,9 @@ func exportRoute(w http.ResponseWriter, r *http.Request) {
 	file, e := os.Open("./app/frontend/export/index.html")
 	if e != nil {
 		w.Write([]byte{})
+		return
 	}
+	defer file.Close()
 	f, e := io.ReadAll(file)
 
 	if e == nil {
@@ -35,7 +39,12 @@ func exportConfigRouteRes(w http.ResponseWriter, r *http.Request) {
 
 func exportConfigRoute(w http.ResponseWriter, r *http.Request) {
 	v := mux.Vars(r)
-	_, e := os.Stat("./app/tests/" + v["UUID"] + ".dat")
+	rawUUID := v["UUID"]
+	if idx := strings.Index(rawUUID, "?"); idx != -1 {
+		rawUUID = rawUUID[:idx]
+	}
+	cleanUUID := filepath.Base(rawUUID)
+	_, e := os.Stat("./app/tests/" + cleanUUID + ".dat")
 
 	if e != nil {
 		w.Write([]byte("NO SUCH FILE OR DIR"))
@@ -45,7 +54,9 @@ func exportConfigRoute(w http.ResponseWriter, r *http.Request) {
 	file, e := os.Open("./app/frontend/export/config/index.html")
 	if e != nil {
 		w.Write([]byte{})
+		return
 	}
+	defer file.Close()
 	f, e := io.ReadAll(file)
 
 	if e == nil {
@@ -181,18 +192,66 @@ func exportAPI(w http.ResponseWriter, r *http.Request) {
 
 		encoder := json.NewEncoder(w)
 		encoder.Encode(&response)
+	case "saveToPath":
+		var request struct {
+			UUID       string `json:"UUID"`
+			TargetPath string `json:"targetPath"`
+		}
+		var response struct {
+			Status bool   `json:"status"`
+			Msg    string `json:"msg"`
+		}
+		decoder := json.NewDecoder(r.Body)
+		e := decoder.Decode(&request)
+		if e != nil || request.UUID == "" || request.TargetPath == "" {
+			response.Status = false
+			response.Msg = "invalid parameters"
+			json.NewEncoder(w).Encode(&response)
+			return
+		}
+
+		cleanUUID := filepath.Base(request.UUID)
+		srcPath := "./app/tests/" + cleanUUID + ".dou"
+		b, e := os.ReadFile(srcPath)
+		if e != nil {
+			response.Status = false
+			response.Msg = "file not found"
+			json.NewEncoder(w).Encode(&response)
+			return
+		}
+
+		e = os.WriteFile(request.TargetPath, b, 0666)
+		if e != nil {
+			response.Status = false
+			response.Msg = fmt.Sprintf("%v", e)
+			json.NewEncoder(w).Encode(&response)
+			return
+		}
+
+		response.Status = true
+		response.Msg = "ok"
+		json.NewEncoder(w).Encode(&response)
 	case "upload":
-		f, e := os.Create("./app/tests/" + r.Header.Get("uuid") + ".dat")
+		cleanUUID := filepath.Base(r.Header.Get("uuid"))
+		_ = os.MkdirAll("./app/tests", 0777)
+		f, e := os.Create("./app/tests/" + cleanUUID + ".dat")
 		if e != nil {
 			fmt.Println(e)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		defer f.Close()
 
 		dat, e := io.ReadAll(r.Body)
 		if e != nil {
 			fmt.Println(e)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
-		f.Write(dat)
+		if _, e = f.Write(dat); e != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	case "genUUID":
 		w.Write([]byte(genUUID()))
 		w.Header().Add("Content-Type", "text/plain")
@@ -276,7 +335,12 @@ func getExportConfigRawTest(UUID string) (ExportConfigResponse, error) {
 
 func downloadTestRoute(w http.ResponseWriter, r *http.Request) {
 	v := mux.Vars(r)
-	path := "./app/tests/" + v["UUID"]
+	rawUUID := v["UUID"]
+	if idx := strings.Index(rawUUID, "?"); idx != -1 {
+		rawUUID = rawUUID[:idx]
+	}
+	cleanUUID := filepath.Base(rawUUID)
+	path := "./app/tests/" + cleanUUID
 
 	b, e := os.ReadFile(path)
 	fmt.Println(path)
@@ -285,6 +349,7 @@ func downloadTestRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Add("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Disposition", "attachment; filename=\""+cleanUUID+"\"")
+	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Write(b)
 }

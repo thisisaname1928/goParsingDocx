@@ -149,13 +149,13 @@ async function updateTestInfo() {
         });
 
         justAButton.addEventListener('click', async () => {
-            stopATest()
+            await stopATest()
             location.reload()
         })
     } else {
         document.getElementById("testStatus").innerHTML = "<b>Trạng thái bài kiểm tra:</b> chưa được mở"
         justAButton.addEventListener('click', async () => {
-            startATest()
+            await startATest()
             location.reload()
         })
     }

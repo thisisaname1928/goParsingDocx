@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -16,7 +17,9 @@ func livePreview(w http.ResponseWriter, r *http.Request) {
 	file, e := os.Open("./app/frontend/livePreview/index.html")
 	if e != nil {
 		w.Write([]byte{})
+		return
 	}
+	defer file.Close()
 	f, e := io.ReadAll(file)
 
 	if e == nil {
@@ -42,13 +45,16 @@ func detectFileExt(path string) string {
 
 func livePreviewRes(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	file, e := os.Open("./app/frontend/livePreview/" + vars["FILE"])
+	cleanFile := filepath.Base(vars["FILE"])
+	file, e := os.Open("./app/frontend/livePreview/" + cleanFile)
 	if e != nil {
 		w.Write([]byte{})
+		return
 	}
+	defer file.Close()
 	f, e := io.ReadAll(file)
 
-	if str := detectFileExt(vars["FILE"]); str != "" {
+	if str := detectFileExt(cleanFile); str != "" {
 		w.Header().Add("Content-Type", str)
 	} else {
 		contentType := http.DetectContentType(f)
@@ -91,6 +97,7 @@ func internalUploadAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_ = os.MkdirAll("./app/tests", 0777)
 	e = os.WriteFile("./app/tests/"+request.UUID+".dat", f, os.FileMode(0777))
 	if e != nil {
 		response.Msg = "INTERNAL_ERR"
@@ -170,16 +177,19 @@ func GenQues(path string) ([]docx.Question, error) {
 
 func mediaRoute(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	file, e := os.Open("./app/media/" + vars["FILE"])
+	cleanFile := filepath.Base(vars["FILE"])
+	file, e := os.Open("./app/media/" + cleanFile)
 	if e != nil {
 		w.Write([]byte{})
+		return
 	}
+	defer file.Close()
 	f, e := io.ReadAll(file)
 	if e != nil {
 		return
 	}
 
-	if str := detectFileExt("./app/media/" + vars["FILE"]); str != "" {
+	if str := detectFileExt("./app/media/" + cleanFile); str != "" {
 		w.Header().Add("Content-Type", str)
 	} else {
 		contentType := http.DetectContentType(f)
@@ -187,5 +197,4 @@ func mediaRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(f)
-
 }

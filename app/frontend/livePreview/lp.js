@@ -182,6 +182,10 @@ async function getUUID() {
 }
 
 async function internalUploadFileAPI(path) {
+    if (!path || path.trim() === "") {
+        alert("Vui lòng chọn hoặc nhập đường dẫn file trước khi xuất đề!");
+        return;
+    }
     UUID = await getUUID()
 
     res = await fetch("/LivePreview/API/internalUploadAPI", { method: "POST", body: JSON.stringify({ path: path, UUID: UUID }) })
@@ -196,7 +200,23 @@ async function internalUploadFileAPI(path) {
         return
     }
 
-    window.location.href = window.location.href.replace("/LivePreview", "/Export/Config/UUID/" + UUID + "?exportType=useDocx")
+    window.location.href = window.location.origin + "/Export/Config/UUID/" + UUID + "?exportType=useDocx"
+}
+
+async function browseFile() {
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.select_file) {
+        try {
+            const selectedPath = await window.pywebview.api.select_file();
+            if (selectedPath) {
+                filePathInput.value = selectedPath;
+                fetchForQuestions();
+            }
+        } catch (e) {
+            console.error("Error opening OS file dialog:", e);
+        }
+    } else {
+        alert("Tính năng chọn file qua HĐH chỉ khả dụng khi chạy ứng dụng qua Douglas Desktop (wrapper). Bạn vẫn có thể nhập đường dẫn file vào ô bên cạnh.");
+    }
 }
 
 function sleep(ms) {

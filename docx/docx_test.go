@@ -58,3 +58,23 @@ func TestDocx(t *testing.T) {
 	fmt.Println("\nC.", ex.Answer[2])
 	fmt.Println("\nD.", ex.Answer[3])
 }
+
+func TestConcatFluidUTF8(t *testing.T) {
+	f1 := FluidString{Text: "Câu 1: Cho hàm số ", Properties: []FluidProperty{}}
+	f2 := FluidString{Text: "đáp án", Properties: []FluidProperty{{Start: 0, End: 6, Property: []Prop{{Type: Bold, Value: "true"}}}}}
+
+	res := ConcatFluid(f1, f2)
+	expectedRuneStart := calLen(f1.Text)
+	if res.Properties[0].Start != expectedRuneStart {
+		t.Errorf("Expected Start offset %d, got %d", expectedRuneStart, res.Properties[0].Start)
+	}
+}
+
+func TestParseFluid2HtmlEndProperty(t *testing.T) {
+	f := FluidString{Text: "HelloWorld", Properties: []FluidProperty{{Start: 5, End: 10, Property: []Prop{{Type: Bold, Value: "true"}}}}}
+	html := ParseFluid2Html(f)
+	expected := "<label class=\"ques_content\">Hello<b>World</b></label>"
+	if html != expected {
+		t.Errorf("Expected HTML %q, got %q", expected, html)
+	}
+}

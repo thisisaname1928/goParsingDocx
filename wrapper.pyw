@@ -9,6 +9,13 @@ import json
 host = "localhost"
 port = 8080
 
+try:
+    webview.platforms.gtk.BrowserView.settings.set_property('enable-developer-extras', True)
+    webview.platforms.gtk.BrowserView.settings.set_property('enable-local-storage', True)
+    webview.platforms.gtk.BrowserView.settings.set_property('enable-dom-storage', True)
+except:
+    pass
+
 def update(path):
     try:
         f = zipfile.ZipFile(path, 'r')
@@ -39,10 +46,40 @@ def check4Update():
     except:
         print("not ok")
 
+class Api:
+    def __init__(self):
+        self._window = None
+
+    def set_window(self, window):
+        self._window = window
+
+    def select_file(self):
+        if not self._window:
+            return ""
+        file_types = ('Docx Files (*.docx)', 'All files (*.*)')
+        result = self._window.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=False, file_types=file_types)
+        if result and len(result) > 0:
+            return result[0]
+        return ""
+
+    def save_file(self, filename="exported.dou"):
+        if not self._window:
+            return ""
+        file_types = ('Douglas Files (*.dou)', 'All files (*.*)')
+        result = self._window.create_file_dialog(webview.SAVE_DIALOG, save_filename=filename, file_types=file_types)
+        if result:
+            if isinstance(result, (list, tuple)) and len(result) > 0:
+                return result[0]
+            return str(result)
+        return ""
+
+import os
+
 if __name__ == '__main__':
     check4Update()
     
-    proccess = subprocess.Popen(["goParsingDocx.exe"])
+    executable = "goParsingDocx.exe" if sys.platform == "win32" else "./goParsingDocx"
+    proccess = subprocess.Popen([executable])
 
     while True:
         try:
@@ -53,9 +90,11 @@ if __name__ == '__main__':
             time.sleep(0.5)
     
     webview.settings['ALLOW_DOWNLOADS'] = True
-    webview.create_window(title="Douglas", url=f'http://{host}:{port}/Home', width=1424, height=700)
+    api = Api()
+    window = webview.create_window(title="Douglas", url=f'http://{host}:{port}/Home', width=1424, height=700, js_api=api)
+    api.set_window(window)
 
-    webview.start(icon="./icon.png")
+    webview.start(debug=True, private_mode=True, storage_path=os.path.abspath("cache"))
 
     if sys.platform == "win32":
         proccess.terminate()

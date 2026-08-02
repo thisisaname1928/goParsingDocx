@@ -67,14 +67,16 @@ func String2Fluid(content string) []FluidString {
 		aaRune := []rune(curRes)
 		var prop []FluidProperty
 
-		for k := 0; k < len(aaRune)-3; {
-			if aaRune[k] == '*' && aaRune[k+3] == ' ' && isAnswerKey(aaRune[k+1], aaRune[k+2]) {
-				aaRune = removeRune(aaRune, k)
-				prop = append(prop, FluidProperty{Start: k, End: k + 1, Property: []Prop{{Marked, "yellow"}}})
-				k += 2
-			} else {
-				k++
+		for k := 0; k < len(aaRune)-2; {
+			if aaRune[k] == '*' && isAnswerKey(aaRune[k+1], aaRune[k+2]) {
+				if k+3 >= len(aaRune) || aaRune[k+3] == ' ' || aaRune[k+3] == '\t' || aaRune[k+3] == ':' || aaRune[k+3] == ')' {
+					aaRune = removeRune(aaRune, k)
+					prop = append(prop, FluidProperty{Start: k, End: k + 1, Property: []Prop{{Marked, "yellow"}}})
+					k += 2
+					continue
+				}
 			}
+			k++
 		}
 
 		curRes = string(aaRune)
@@ -235,13 +237,9 @@ func DelNCharacter(str *FluidString, n int) {
 	}
 }
 
-func ParseFluid2Html(str FluidString) string {
+func parseFluid2HtmlInternal(str FluidString, allowMark bool) string {
 	output := ""
 	addLabel := false
-
-	if str.Text == "" {
-		str.Text += " "
-	}
 
 	text := []rune(str.Text)
 	for _, v := range text {
@@ -251,8 +249,25 @@ func ParseFluid2Html(str FluidString) string {
 		}
 	}
 
-	for i, c := range text {
+	for i := 0; i <= len(text); i++ {
 		for _, prop := range str.Properties {
+			if prop.End == i && i != 0 {
+				for _, pr := range prop.Property {
+					if pr.Type == Bold && pr.Value != "false" {
+						output += "</b>"
+					}
+					if pr.Type == Italic && pr.Value != "false" {
+						output += "</i>"
+					}
+					if pr.Type == Underline && pr.Value != "false" {
+						output += "</u>"
+					}
+					if allowMark && pr.Type == Marked && pr.Value != "auto" {
+						output += "</mark>"
+					}
+				}
+			}
+
 			if prop.Start == i {
 				for _, pr := range prop.Property {
 					if pr.Type == ImgSource {
@@ -267,33 +282,16 @@ func ParseFluid2Html(str FluidString) string {
 					if pr.Type == Underline && pr.Value != "false" {
 						output += "<u>"
 					}
-					if pr.Type == Marked && pr.Value != "auto" {
+					if allowMark && pr.Type == Marked && pr.Value != "auto" {
 						output += "<mark>"
 					}
 				}
 			}
-
-			if prop.End == i && i != 0 {
-				for _, pr := range prop.Property {
-					if pr.Type == Bold && pr.Value != "false" {
-						output += "</b>"
-					}
-					if pr.Type == Italic && pr.Value != "false" {
-						output += "</i>"
-					}
-					if pr.Type == Underline && pr.Value != "false" {
-						output += "</u>"
-					}
-					if pr.Type == Marked && pr.Value != "auto" {
-						output += "</mark>"
-					}
-				}
-			}
-
 		}
 
-		output += string(c)
-
+		if i < len(text) {
+			output += string(text[i])
+		}
 	}
 
 	if addLabel {
@@ -302,63 +300,12 @@ func ParseFluid2Html(str FluidString) string {
 	return output
 }
 
+func ParseFluid2Html(str FluidString) string {
+	return parseFluid2HtmlInternal(str, true)
+}
+
 func ParseFluid2HtmlNonMark(str FluidString) string {
-	output := ""
-	addLabel := false
-
-	if str.Text == "" {
-		str.Text += " "
-	}
-
-	text := []rune(str.Text)
-	for _, v := range text {
-		if v != ' ' {
-			addLabel = true
-			break
-		}
-	}
-
-	for i, c := range text {
-		for _, prop := range str.Properties {
-			if prop.Start == i {
-				for _, pr := range prop.Property {
-					if pr.Type == ImgSource {
-						output += "<img src=\"" + pr.Value + "\">"
-					}
-					if pr.Type == Bold && pr.Value != "false" {
-						output += "<b>"
-					}
-					if pr.Type == Italic && pr.Value != "false" {
-						output += "<i>"
-					}
-					if pr.Type == Underline && pr.Value != "false" {
-						output += "<u>"
-					}
-				}
-			}
-
-			if prop.End == i && i != 0 {
-				for _, pr := range prop.Property {
-					if pr.Type == Bold && pr.Value != "false" {
-						output += "</b>"
-					}
-					if pr.Type == Italic && pr.Value != "false" {
-						output += "</i>"
-					}
-					if pr.Type == Underline && pr.Value != "false" {
-						output += "</u>"
-					}
-				}
-			}
-
-		}
-		output += string(c)
-	}
-
-	if addLabel {
-		output = "<label class=\"ques_content\">" + output + "</label>"
-	}
-	return output
+	return parseFluid2HtmlInternal(str, false)
 }
 
 // a1, a2 as source index, b1 b2 as chop index
@@ -384,15 +331,16 @@ func chopRange(a1 int, a2 int, b1 int, b2 int) (int, int) {
 func CopyFluid(fluid FluidString, beginIndex int, endIndex int) FluidString {
 	var res FluidString
 	aRune := []rune(fluid.Text)
-	nonCopyLen := beginIndex
-
-	for i := beginIndex; i <= endIndex; i++ {
-		if i >= len(aRune) {
-			break
-		}
-
-		res.Text += string(aRune[i])
+	if beginIndex < 0 {
+		beginIndex = 0
 	}
+	if endIndex >= len(aRune) {
+		endIndex = len(aRune) - 1
+	}
+	if beginIndex <= endIndex && len(aRune) > 0 {
+		res.Text = string(aRune[beginIndex : endIndex+1])
+	}
+	nonCopyLen := beginIndex
 
 	// check 4 property
 	for i := range fluid.Properties {
@@ -410,7 +358,7 @@ func CopyFluid(fluid FluidString, beginIndex int, endIndex int) FluidString {
 }
 
 func ConcatFluid(fluid1 FluidString, fluid2 FluidString) FluidString {
-	concatIndex := len(fluid1.Text)
+	concatIndex := calLen(fluid1.Text)
 	var res FluidString
 	res.Text = fluid1.Text[:] + fluid2.Text[:]
 

@@ -3,56 +3,32 @@ const msg = document.getElementById('msg')
 const configBox = document.getElementById('configBox')
 const exportButton = document.getElementById('exp')
 const body = document.body;
-tmp = window.location.href.split("/")
-let UUID = tmp[tmp.length - 1]
-const parsedUrl = new URL(location.href)
-const parseExportType = parsedUrl.searchParams.get("exportType")
-
-
-modeToggleButton.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-
-    if (body.classList.contains('dark-mode')) {
-        modeToggleButton.textContent = 'Chế độ sáng';
-        localStorage.setItem('theme', 'dark');
-    } else {
-        modeToggleButton.textContent = 'Chế độ tối';
-        localStorage.setItem('theme', 'light');
+function getUUIDFromURL() {
+    const url = new URL(window.location.href);
+    const pathParts = url.pathname.split('/').filter(p => p.length > 0);
+    const uuidIndex = pathParts.indexOf('UUID');
+    if (uuidIndex !== -1 && uuidIndex + 1 < pathParts.length) {
+        return pathParts[uuidIndex + 1].split('?')[0];
     }
-});
+    return "";
+}
+let UUID = getUUIDFromURL();
+const parsedUrl = new URL(location.href);
+const parseExportType = parsedUrl.searchParams.get("exportType") || "useDocx";
+
 
 document.addEventListener('DOMContentLoaded', () => {
-    const savedMode = localStorage.getItem('theme');
-    if (savedMode === 'dark') {
-        body.classList.add('dark-mode');
-        modeToggleButton.textContent = 'Chế độ sáng';
-    } else {
-        modeToggleButton.textContent = 'Chế độ tối';
-    }
 
-    if (!parseExportType) {
-        configBox.innerHTML = 'Lỗi không xác định, vui lòng xuất lại đề!'
-        return
-    }
+    UUID = getUUIDFromURL();
 
-    res = ""
-    for (i = 0; i < UUID.length; i++) {
-        if (UUID[i] == '?') {
-            break
-        }
-
-        res += UUID[i]
-    }
-
-    UUID = res
-
-    exportButton.addEventListener('click', () => {
+    exportButton.addEventListener('click', async () => {
         expData = getConfig()
         if (!expData.status) {
             alert(expData.msg)
+            return
         }
 
-        exportTest(expData)
+        await exportTest(expData)
     })
 
     initConf()
@@ -161,6 +137,8 @@ async function initConf() {
     for (i = 0; i < obj.stype.length; i++) {
         configBox.innerHTML += renderStypeConfig(obj.stype[i].stype, obj.stype[i].N)
     }
+
+    alert("ok")
 }
 
 function getTNDSPointCalcInfo() {
@@ -202,19 +180,41 @@ function getConfig() {
 
 async function exportTest(obj) {
     res = await fetch("/Export/API/export", { method: "POST", body: JSON.stringify(obj) })
-    dat = res.json()
+    dat = await res.json()
     if (dat.status == false) {
         alert(dat.msg)
         return
     }
 
-    alert('Xuất đề thành công!')
-    const link = document.createElement("a")
-    link.href = "/Export/Download/UUID/" + UUID + ".dou"
-    link.download = 'exported.dou'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.save_file) {
+        try {
+            const savePath = await window.pywebview.api.save_file("exported.dou");
+            if (savePath) {
+                const saveRes = await fetch("/Export/API/saveToPath", {
+                    method: "POST",
+                    body: JSON.stringify({ UUID: UUID, targetPath: savePath })
+                });
+                const saveJson = await saveRes.json();
+                if (saveJson.status) {
+                    alert("Xuất đề thành công! Đã lưu tại: " + savePath);
+                } else {
+                    alert("Lỗi khi lưu file: " + saveJson.msg);
+                }
+            }
+        } catch (e) {
+            console.error("Error with OS save file dialog:", e);
+            alert('Xuất đề thành công!');
+            window.location.href = "/Export/Download/UUID/" + UUID + ".dou";
+        }
+    } else {
+        alert('Xuất đề thành công!')
+        const link = document.createElement("a")
+        link.href = "/Export/Download/UUID/" + UUID + ".dou"
+        link.download = 'exported.dou'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
 }
 
 function fetch4ExportConfig() {

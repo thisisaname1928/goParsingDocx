@@ -337,7 +337,12 @@ async function getTest(uuid) {
 
     await renderTest(jsonRes)
 
-    summitBtn.addEventListener("click", function () { doneTest(); location.reload() })
+    summitBtn.addEventListener("click", async function () {
+        const ok = await doneTest()
+        if (ok) {
+            location.reload()
+        }
+    })
 }
 
 // load reload answer sheet

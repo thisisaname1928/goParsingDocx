@@ -29,5 +29,6 @@ build
 ./tmp.json
 testsvr/testdata/*
 !holder.txt
+goParsingDocx
 app/media/*
 dglWrapper/CMakeUserPresets.json

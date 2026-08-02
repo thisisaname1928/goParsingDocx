@@ -27,6 +27,11 @@ func getIP(r *http.Request) string {
 	return requestIP
 }
 
+func isLoopbackIP(ipStr string) bool {
+	ip := net.ParseIP(ipStr)
+	return ip != nil && ip.IsLoopback()
+}
+
 func (fir *DouglasFir) verifyIP(uuid string, IP string) bool {
 	fir.TestSessions.mutex.Lock()
 	defer fir.TestSessions.mutex.Unlock()
@@ -35,7 +40,15 @@ func (fir *DouglasFir) verifyIP(uuid string, IP string) bool {
 		return false
 	}
 
-	return test.IP == IP
+	if test.IP == IP {
+		return true
+	}
+
+	if isLoopbackIP(test.IP) && isLoopbackIP(IP) {
+		return true
+	}
+
+	return false
 }
 
 func (fir *DouglasFir) getTest(uuid string) ([]byte, error) {

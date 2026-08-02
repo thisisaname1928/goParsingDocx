@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -99,21 +98,29 @@ func Parse(path string) (Document, error) {
 	invalidDocxFile := errors.New("invalid docx file")
 
 	documentXML, e := DecompressFile(path, "word/document.xml")
-	documentXML = []byte(StripTag(string(documentXML)))
-
-	if e != nil {
+	if e != nil || len(documentXML) == 0 {
 		return doc, invalidDocxFile
 	}
 
-	if string(documentXML) == "" { // if the file content is ""
-		return doc, invalidDocxFile
-	}
+	decoder := xml.NewDecoder(bytes.NewReader(documentXML))
+	for {
+		tok, err := decoder.Token()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			break
+		}
 
-	e = xml.Unmarshal(documentXML, &doc)
-
-	if e != nil {
-		fmt.Println(e)
-		return doc, invalidDocxFile
+		switch se := tok.(type) {
+		case xml.StartElement:
+			if se.Name.Local == "p" {
+				var p Paragraph
+				if err := decoder.DecodeElement(&p, &se); err == nil {
+					doc.Body.Paragraphs = append(doc.Body.Paragraphs, p)
+				}
+			}
+		}
 	}
 
 	return doc, nil

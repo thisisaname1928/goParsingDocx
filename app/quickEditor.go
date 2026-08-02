@@ -20,7 +20,9 @@ func quickEditorRoute(w http.ResponseWriter, r *http.Request) {
 	file, e := os.Open("./app/frontend/quickEditor/index.html")
 	if e != nil {
 		w.Write([]byte{})
+		return
 	}
+	defer file.Close()
 	f, e := io.ReadAll(file)
 
 	if e == nil {
@@ -77,38 +79,49 @@ type UsageMetadata struct {
 }
 
 func Call4AI(prompt string, key string) (string, error) {
-	jsonContent := `{
-    "contents": [
-      {
-        "parts": [
-          {
-            "text": "` + prompt + `"
-          }
-        ]
-      }
-    ]
-  }`
+	reqBodyObj := map[string]interface{}{
+		"contents": []map[string]interface{}{
+			{
+				"parts": []map[string]interface{}{
+					{"text": prompt},
+				},
+			},
+		},
+	}
+	jsonBytes, err := json.Marshal(reqBodyObj)
+	if err != nil {
+		return "", err
+	}
 
-	requestBody := bytes.NewBuffer([]byte(jsonContent))
-
-	resquest, _ := http.NewRequest("POST", "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent", requestBody)
+	requestBody := bytes.NewBuffer(jsonBytes)
+	resquest, err := http.NewRequest("POST", "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent", requestBody)
+	if err != nil {
+		return "", err
+	}
 
 	resquest.Header.Add("X-goog-api-key", key)
 	resquest.Header.Add("Content-Type", "application/json")
 
 	client := http.Client{}
+	res, err := client.Do(resquest)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
 
-	res, _ := client.Do(resquest)
-
-	fmt.Println(res)
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("API error status: %s", res.Status)
+	}
 
 	decoder := json.NewDecoder(res.Body)
-
 	var response Root
+	if err := decoder.Decode(&response); err != nil {
+		return "", err
+	}
 
-	decoder.Decode(&response)
-
-	fmt.Println(response)
+	if len(response.Candidates) == 0 || len(response.Candidates[0].Content.Parts) == 0 {
+		return "", fmt.Errorf("empty AI response candidates")
+	}
 
 	return response.Candidates[0].Content.Parts[0].Text, nil
 }

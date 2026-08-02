@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
 )
@@ -40,7 +41,9 @@ func favicon(w http.ResponseWriter, r *http.Request) {
 	file, e := os.Open("./app/icon.ico")
 	if e != nil {
 		w.Write([]byte{})
+		return
 	}
+	defer file.Close()
 	f, e := io.ReadAll(file)
 
 	if str := detectFileExt("./app/icon.ico"); str != "" {
@@ -57,14 +60,16 @@ func favicon(w http.ResponseWriter, r *http.Request) {
 
 func addResource(w http.ResponseWriter, r *http.Request, path string) {
 	vars := mux.Vars(r)
-	file, e := os.Open(path + vars["FILE"])
+	cleanFile := filepath.Base(vars["FILE"])
+	file, e := os.Open(path + cleanFile)
 	if e != nil {
 		w.Write([]byte("NOT FOUND"))
 		return
 	}
+	defer file.Close()
 	f, e := io.ReadAll(file)
 
-	if str := detectFileExt(vars["FILE"]); str != "" {
+	if str := detectFileExt(cleanFile); str != "" {
 		w.Header().Add("Content-Type", str)
 	} else {
 		contentType := http.DetectContentType(f)

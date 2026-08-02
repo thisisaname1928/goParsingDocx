@@ -18,6 +18,7 @@
                 <div class="file-input-container">
                     <input type="text" id="filePathInput" class="file-path-input"
                         placeholder="Nhập đường dẫn file (ví dụ: C:/users/document.txt)">
+                    <button id="browseButton" class="mode-toggle-button" onclick="browseFile()">Chọn file</button>
                     <button id="exportButton" class="mode-toggle-button"
                         onclick="internalUploadFileAPI(document.getElementById('filePathInput').value)">Xuất đề</button>
                 </div>
