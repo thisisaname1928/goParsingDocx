@@ -138,7 +138,6 @@ async function initConf() {
         configBox.innerHTML += renderStypeConfig(obj.stype[i].stype, obj.stype[i].N)
     }
 
-    alert("ok")
 }
 
 function getTNDSPointCalcInfo() {

@@ -94,7 +94,7 @@ if __name__ == '__main__':
     window = webview.create_window(title="Douglas", url=f'http://{host}:{port}/Home', width=1424, height=700, js_api=api)
     api.set_window(window)
 
-    webview.start(debug=True, private_mode=True, storage_path=os.path.abspath("cache"))
+    webview.start(debug=False, private_mode=True, storage_path=os.path.abspath("cache"))
 
     if sys.platform == "win32":
         proccess.terminate()
